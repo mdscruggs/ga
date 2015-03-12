@@ -9,4 +9,4 @@ def run_all():
     
     for modname in __all__:
         print("Running", modname)
-        globals_copy[modname].run_example()
+        globals_copy[modname].run()

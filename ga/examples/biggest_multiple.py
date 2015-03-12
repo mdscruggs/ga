@@ -4,9 +4,8 @@ py.style.use('ggplot')
 from ..algorithms import BiggestMultipleGA
 from .. import util
 
-def run_example():
+def run(gene_length=16, generations=2**32):
     # find largest encodable integer that has all factors
-    gene_length = 16
     chromosomes = util.random_chromosomes(10, gene_length)
 
     factors = (2, 3, 7, 11)
@@ -14,7 +13,6 @@ def run_example():
     
     # run until we (hopefully) find the largest encodable 
     # value that is a product of all the factors
-    generations = 2**32 
     p_mutate = 0.15
     p_cross = 0.25
     best = bm_ga.run(generations, p_mutate, p_cross, elitist=True)

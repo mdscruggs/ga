@@ -9,7 +9,7 @@ from ..chromosomes import ReorderingSetChromosome
 from ..algorithms import TravelingSalesmanGA
 from ..translators import BinaryIntTranslator
     
-def run_example(num_cities=20, generations=2500):
+def run(num_cities=20, generations=2500):
     # solve a simple travelling salesman problem
     rs = random.randint(1, 1000000)
     random.seed(100)

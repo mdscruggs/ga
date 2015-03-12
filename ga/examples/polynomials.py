@@ -4,10 +4,8 @@ py.style.use('ggplot')
 from ..algorithms import PolyModelGA
 from .. import util
     
-def run_example():
+def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
     # fit a polynomial equation to expected values
-    coefficients = (0.001, 0.01, 0.1, 1)
-    num_x = 10
     
     poly_str = ''
     for i, c in enumerate(coefficients[::-1]):
@@ -34,7 +32,6 @@ def run_example():
     
     poly_ga = PolyModelGA(coefficients, num_x, significand_length, chromosomes, abs_fit_weight=1, rel_fit_weight=0)
     
-    generations = 5000
     p_mutate = 0.15
     p_cross = 0.50
     best = poly_ga.run(generations, p_mutate, p_cross, elitist=True)
