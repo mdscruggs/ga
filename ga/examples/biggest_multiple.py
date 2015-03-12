@@ -4,11 +4,10 @@ py.style.use('ggplot')
 from ..algorithms import BiggestMultipleGA
 from .. import util
 
-def run(gene_length=16, generations=2**32):
+def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32):
     # find largest encodable integer that has all factors
     chromosomes = util.random_chromosomes(10, gene_length)
 
-    factors = (2, 3, 7, 11)
     bm_ga = BiggestMultipleGA(factors, chromosomes)
     
     # run until we (hopefully) find the largest encodable 
