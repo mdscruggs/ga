@@ -3,14 +3,13 @@ py.style.use('ggplot')
 
 from ..algorithms import PolyModelGA
 from .. import util
-    
+
+
 def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
     # fit a polynomial equation to expected values
     
     poly_str = ''
     for i, c in enumerate(coefficients[::-1]):
-        sign = '+' if c >= 0 else '-'
-        
         if i > 1:
             poly_str = '{0:+} x^{1} '.format(c, i) + poly_str
         elif i == 1:
@@ -26,7 +25,6 @@ def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
     #   1 bit for exponent sign
     #   2 bits for exponent body (represent 0, 1, 2)
     significand_length = 8
-    poly_degree = len(coefficients)
     gene_length = (1 + significand_length + 1 + 2,) * len(coefficients)  # 1 gene per polynomial coefficient
     chromosomes = util.random_chromosomes(20, gene_length)
     

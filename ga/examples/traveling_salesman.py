@@ -8,7 +8,8 @@ from ..genes import BinaryGene
 from ..chromosomes import ReorderingSetChromosome
 from ..algorithms import TravelingSalesmanGA
 from ..translators import BinaryIntTranslator
-    
+
+
 def run(num_cities=20, generations=2500):
     # solve a simple travelling salesman problem
     rs = random.randint(1, 1000000)

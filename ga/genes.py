@@ -21,7 +21,7 @@ class BaseGene:
         length:  the number of characters in the randomized DNA
         **kwargs:  forwarded to the ``cls`` constructor
         """
-        dna = ''.join([random.choice(cls.GENETIC_MATERIAL_OPTIONS) for i in range(length)])
+        dna = ''.join([random.choice(cls.GENETIC_MATERIAL_OPTIONS) for _ in range(length)])
         return cls(dna, **kwargs)
 
     def __init__(self, dna, suppressed=False, name=None):
@@ -78,9 +78,10 @@ class BaseGene:
     def __str__(self):
         s = 'Gene'
         if self.name:
-            s += ' ' + name
-        return '<' + self.dna + '>'
-        
+            s += '[' + self.name + ']'
+        return s + '<' + self.dna + '>'
+
+
 class BinaryGene(BaseGene):
     """
     The most common gene type for genetic algorithms,

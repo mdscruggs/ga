@@ -1,7 +1,4 @@
-import string
-
 from .chromosomes import Chromosome
-from .genes import BaseGene
 
 
 class BaseTranslator:

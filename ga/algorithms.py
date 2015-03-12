@@ -1,11 +1,9 @@
-from collections import Counter
 import functools
 import random
 import time
 
 from .chromosomes import Chromosome
-from .genes import BinaryGene
-from .translators import BinaryIntTranslator, BinaryFloatTranslator, Base10IntTranslator
+from .translators import BinaryIntTranslator, BinaryFloatTranslator
 from .util import weighted_choice, compute_fitness_cdf
 
 
