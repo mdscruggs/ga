@@ -10,7 +10,7 @@ class Chromosome:
     """
     def __init__(self, genes):
         """
-        Construct a new Chromosome.
+        Construct a new ``Chromosome`` instance.
         
         genes:  a collection of ``genes.BaseGene`` instances
         """
@@ -97,36 +97,44 @@ class Chromosome:
 
 class ReorderingSetChromosome(Chromosome):
     """
-    A chromosome that can only have specific genes.
+    A chromosome for completely representing a set of values.
+    Each gene represents a distinct value in the set.
+    The chromosome must represent each value in the set of choices exactly once.
+    Evolutionary mechanisms are limited to reordering the original genes.
     """
-    def __init__(self, genes, choices):
+    def __init__(self, genes, dna_choices):
+        """
+        Construct a new ``ReorderingSetChromosome`` instance.
+
+        genes:  genes in this chromosome, which must pass the ``self.check_genes()`` test.
+        dna_choices:  collection of unique DNA choices that genes in this chromosome must represent
+        """
         super().__init__(genes)
-        self.choices = choices
-        self.choices_set = set(choices)
-        assert len(self.choices) == len(self.choices_set)
+        self.dna_choices = tuple(dna_choices)
+        self.dna_choices_set = set(dna_choices)
+        assert len(self.dna_choices) == len(self.dna_choices_set)
+        self.check_genes()
         
-    def _check_genes(self):
-        # check genes for uniqueness
-        for g in self.genes:
-            assert g.dna in self.choices_set
+    def check_genes(self):
+        """ Assert that every DNA choice is represented by exactly one gene. """
         gene_dna_set = set([g.dna for g in self.genes])
-        assert gene_dna_set == self.choices_set
+        assert gene_dna_set == self.dna_choices_set
         
     def mutate(self, p_mutate):
         # gene-swapping mutation
-        if random.random() < p_mutate:
-            num_genes = len(self.genes)
-            g1_idx = random.randrange(num_genes)
-            g2_idx = g1_idx
+        for g1_idx, gene in enumerate(self.genes):
+            if random.random() < p_mutate:
+                num_genes = len(self.genes)
+                g2_idx = g1_idx
+
+                while g1_idx == g2_idx:
+                    g2_idx = random.randrange(num_genes)
+
+                tmp = self.genes[g2_idx].copy()
+                self.genes[g2_idx] = gene.copy()
+                self.genes[g1_idx] = tmp
             
-            while g1_idx == g2_idx:
-                g2_idx = random.randrange(num_genes)
-                
-            tmp = self.genes[g2_idx].copy()
-            self.genes[g2_idx] = self.genes[g1_idx].copy()
-            self.genes[g1_idx] = tmp
-            
-            self._check_genes()
+        self.check_genes()
             
     def crossover(self, chromosome, point):
         # find gene on other chromosome at point
@@ -149,8 +157,8 @@ class ReorderingSetChromosome(Chromosome):
                 self.genes[i] = tmp
                 break
                 
-        self._check_genes()
+        self.check_genes()
         
     def copy(self):
         genes = [g.copy() for g in self.genes]
-        return ReorderingSetChromosome(genes, self.choices)
+        return ReorderingSetChromosome(genes, self.dna_choices)
