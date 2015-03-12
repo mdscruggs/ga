@@ -6,7 +6,7 @@ py.style.use('ggplot')
 
 from ..genes import BinaryGene
 from ..chromosomes import ReorderingSetChromosome
-from ..algorithms import TravelingSalesmanGA
+from ..algorithms import TravellingSalesmanGA
 from ..translators import BinaryIntTranslator
 
 
@@ -55,7 +55,7 @@ def run(num_cities=20, generations=2500):
         c = ReorderingSetChromosome(genes, choices)
         chromosomes.append(c)
         
-    ts_ga = TravelingSalesmanGA(city_distances, chromosomes, translator=BinaryIntTranslator())
+    ts_ga = TravellingSalesmanGA(city_distances, chromosomes, translator=BinaryIntTranslator())
     
     p_mutate = 0.10
     p_cross = 0.50

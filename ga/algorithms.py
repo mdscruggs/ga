@@ -403,7 +403,7 @@ class PolyModelGA(BaseGeneticAlgorithm):
         return fitness
         
         
-class TravelingSalesmanGA(BaseGeneticAlgorithm):
+class TravellingSalesmanGA(BaseGeneticAlgorithm):
     def __init__(self, city_distances, *args, **kwargs):
         """
         city_distances:  2-deep mapping of city_id -> city_id -> distance
@@ -432,9 +432,6 @@ class TravelingSalesmanGA(BaseGeneticAlgorithm):
             
         # get list of city IDs
         city_ids = self.translator.translate_chromosome(chromosome)
-        
-        # heavily penalize solutions that repeat visits to cities
-        penalty = 0
             
         # compute distance travelled
         tot_dist = 0
@@ -444,6 +441,6 @@ class TravelingSalesmanGA(BaseGeneticAlgorithm):
             
         tot_dist += self.city_distances[city_ids[-1]][city_ids[0]]
             
-        fitness = 0 - tot_dist - penalty
+        fitness = -1 * tot_dist
         self.fitness_cache[chromosome.dna] = fitness
         return fitness
