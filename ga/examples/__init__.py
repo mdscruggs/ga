@@ -1,8 +1,9 @@
-__all__ = ['biggest_multiple', 'polynomials', 'traveling_salesman']
+__all__ = ['biggest_multiple', 'polynomials', 'travelling_salesman.py']
 
 from . import biggest_multiple
 from . import polynomials
-from . import traveling_salesman
+from . import travelling_salesman
+
 
 def run_all():
     globals_copy = dict(globals())
