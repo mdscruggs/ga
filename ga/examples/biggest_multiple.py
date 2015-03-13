@@ -1,5 +1,8 @@
-import pylab as py
-py.style.use('ggplot')
+try:
+    import pylab as py
+    py.style.use('ggplot')
+except ImportError:
+    py = None
 
 from ..algorithms import BiggestMultipleGA
 from .. import util
@@ -23,12 +26,15 @@ def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32):
     
     for factor in factors:
         assert best_num % factor == 0
-    
-    # plot fitness progression
-    py.plot(bm_ga.overall_fittest_fit, label='run')
-    
-    py.xlabel('generation')
-    py.ylabel('fitness')
-    py.legend(loc='best')
-    
-    py.show()
+
+    if py:
+        # plot fitness progression
+        py.plot(bm_ga.overall_fittest_fit, label='run')
+
+        py.xlabel('generation')
+        py.ylabel('fitness')
+        py.legend(loc='best')
+
+        py.show()
+    else:
+        print("Did not plot example results because matplotlib not installed")
