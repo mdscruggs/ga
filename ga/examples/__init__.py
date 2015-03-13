@@ -1,4 +1,4 @@
-__all__ = ['biggest_multiple', 'polynomials', 'travelling_salesman.py']
+__all__ = ['biggest_multiple', 'polynomials', 'travelling_salesman']
 
 from . import biggest_multiple
 from . import polynomials
