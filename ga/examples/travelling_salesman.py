@@ -15,7 +15,7 @@ from ..algorithms import TravellingSalesmanGA
 from ..translators import BinaryIntTranslator
 
 
-def run(num_cities=20, generations=2500):
+def run(num_cities=20, num_chromosomes=20, generations=2500):
     # solve a simple travelling salesman problem
     rs = random.randint(1, 1000000)
     random.seed(100)
@@ -48,7 +48,7 @@ def run(num_cities=20, generations=2500):
     random.seed(rs)
     
     chromosomes = []
-    for x in range(20):
+    for x in range(num_chromosomes):
         genes = []
         
         for city_id in city_ids:
@@ -62,18 +62,13 @@ def run(num_cities=20, generations=2500):
         
     ts_ga = TravellingSalesmanGA(city_distances, chromosomes, translator=BinaryIntTranslator())
     
-    p_mutate = 1 / num_cities
-    p_cross = 0.20
+    p_mutate = 0.10
+    p_cross = 0.50
     
     best = ts_ga.run(generations, p_mutate, p_cross, elitist=True)
     best_city_ids = ts_ga.translator.translate_chromosome(best)
     best_fit = ts_ga.eval_fitness(best)
-    
-    best_dist = 0
-    for i, start_city_id in enumerate(best_city_ids[:-1]):
-        end_city_id = best_city_ids[i + 1]
-        
-        best_dist += city_distances[start_city_id][end_city_id]
+    best_dist = -1 * best_fit
     
     print("run took", ts_ga.run_time_s, "seconds")
     print("best solution =", best_city_ids)
