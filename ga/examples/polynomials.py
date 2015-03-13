@@ -49,7 +49,7 @@ def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
         x = range(1, num_x + 1)
 
         for new_best_gen in poly_ga.new_fittest_generations:
-            gen_fittest = poly_ga.generation_fittest[new_best_gen-1]
+            gen_fittest = poly_ga.generation_fittest[new_best_gen]
             sol_coefficients = poly_ga.translator.translate_chromosome(gen_fittest)
             modeled_y = poly_ga.compute_y(sol_coefficients, num_x)
             alpha = min(0.5, max(0.2, new_best_gen/max(poly_ga.new_fittest_generations)))

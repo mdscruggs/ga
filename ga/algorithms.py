@@ -57,9 +57,9 @@ class BaseGeneticAlgorithm:
         self.max_fit_ever = None
         
         # run results
-        self.generation_fittest = []
-        self.generation_fittest_fit = []
-        self.overall_fittest_fit = []
+        self.generation_fittest = {}
+        self.generation_fittest_fit = {}
+        self.overall_fittest_fit = {}
         self.new_fittest_generations = []
         self.run_time_s = None
         
@@ -247,9 +247,9 @@ class BaseGeneticAlgorithm:
                 self.sort()
                 self.chromosomes[0].dna = overall_fittest.dna
                 
-            self.generation_fittest.append(gen_fittest)
-            self.generation_fittest_fit.append(gen_fittest_fit)
-            self.overall_fittest_fit.append(overall_fittest_fit)
+            self.generation_fittest[gen] = gen_fittest
+            self.generation_fittest_fit[gen] = gen_fittest_fit
+            self.overall_fittest_fit[gen] = overall_fittest_fit
             
             if self.should_terminate(overall_fittest):
                 break

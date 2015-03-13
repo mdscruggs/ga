@@ -29,7 +29,7 @@ def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32):
 
     if py:
         # plot fitness progression
-        py.plot(bm_ga.overall_fittest_fit, label='run')
+        py.plot([v for k, v in sorted(bm_ga.overall_fittest_fit.items())], label='run')
 
         py.xlabel('generation')
         py.ylabel('fitness')

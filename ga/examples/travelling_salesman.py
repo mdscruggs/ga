@@ -76,19 +76,19 @@ def run(num_cities=20, num_chromosomes=20, generations=2500):
 
     if plt:
         # plot fitness progression
-        plt.plot(ts_ga.overall_fittest_fit, label='run best')
-        plt.plot(ts_ga.generation_fittest_fit, label='gen best')
+        plt.plot([v for k, v in sorted(ts_ga.overall_fittest_fit.items())], label='run best')
+        plt.plot([v for k, v in sorted(ts_ga.generation_fittest_fit.items())], label='gen best')
         plt.legend(loc='best')
         plt.show()
 
         fig, ax = plt.subplots()
 
-        def iter_data():
+        def iter_generations():
             for gen in ts_ga.new_fittest_generations:
                 yield gen
 
         def animate(generation):
-            chromosome = ts_ga.generation_fittest[generation - 1]
+            chromosome = ts_ga.generation_fittest[generation]
             ax.clear()
 
             x, y = [], []
@@ -120,8 +120,8 @@ def run(num_cities=20, num_chromosomes=20, generations=2500):
                 plt.arrow(x1, y1, x2 - x1, y2 - y1, head_width=1.5, fc='k', ec='k', alpha=0.7, linestyle='dotted', length_includes_head=True)
                 plt.text(mid_x, mid_y, str(i + 1))
 
-        ani = animation.FuncAnimation(fig, animate, iter_data,
-                                      repeat=True, interval=1000, repeat_delay=15000)
+        ani = animation.FuncAnimation(fig, animate, iter_generations,
+                                      repeat=True, interval=1000, repeat_delay=12000)
         plt.show()
     else:
         print("Did not plot example results because matplotlib not installed")
