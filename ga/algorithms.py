@@ -75,15 +75,12 @@ class BaseGeneticAlgorithm:
         """ Get the chromosome with the lowest fitness score. """
         return min(self.chromosomes, key=self.eval_fitness)
         
-    def sort(self, chromosomes=None):
+    def sort(self, chromosomes):
         """ 
         Sort a list of chromosomes into ascending order based on fitness score.
         
-        chromosomes (default=None):  list of chromosomes to sort in-place; ``self.chromosomes`` by default
+        chromosomes:  list of chromosomes to sort in-place
         """
-        if not chromosomes:
-            chromosomes = self.chromosomes
-            
         chromosomes.sort(key=self.eval_fitness)
         
     def compete(self, chromosomes):
@@ -190,8 +187,17 @@ class BaseGeneticAlgorithm:
         
         for chromosome in chromosomes:
             chromosome.mutate(p_mutate)
+            
+    def refresh(self, chromosomes, p_mutate=0.5):
+        """
+        Refresh chromosomes with a high mutation rate.
         
-    def run(self, generations, p_mutate, p_crossover, elitist=True):
+        chromosomes:  chromosomes to mutate
+        p_mutate (default=0.5):  mutation rate in [0, 1]
+        """
+        self.mutate(chromosomes, p_mutate)
+        
+    def run(self, generations, p_mutate, p_crossover, elitist=True, refresh_after=None, quit_after=None):
         """
         Run a standard genetic algorithm simulation for a set number
         of generations (iterations), each consisting of the following
@@ -228,6 +234,7 @@ class BaseGeneticAlgorithm:
         
         overall_fittest = self.get_fittest()
         overall_fittest_fit = self.eval_fitness(overall_fittest)
+        gens_since_upset = 0
     
         for gen in range(1, generations + 1):
             survivors = self.compete(self.chromosomes)
@@ -242,10 +249,24 @@ class BaseGeneticAlgorithm:
                 overall_fittest = gen_fittest
                 overall_fittest_fit = gen_fittest_fit
                 self.new_fittest_generations.append(gen)
-            elif elitist:
-                # no new fittest found, replace least fit with overall fittest
-                self.sort()
-                self.chromosomes[0].dna = overall_fittest.dna
+                gens_since_upset = 0
+            else:
+                gens_since_upset += 1
+                
+                if elitist:
+                    # no new fittest found, replace least fit with overall fittest
+                    self.sort(self.chromosomes)
+                    self.chromosomes[0].dna = overall_fittest.dna
+            
+            if quit_after and gens_since_upset >= quit_after:
+                print("quitting on generation", gen, "after", quit_after, "generations with no upset")
+                break
+            
+            if refresh_after and gens_since_upset >= refresh_after:
+                # been a very long time since a new best solution -- mix things up
+                print("refreshing on generation", gen)
+                self.mutate(self.chromosomes, 0.5)
+                gens_since_upset = 0
                 
             self.generation_fittest[gen] = gen_fittest
             self.generation_fittest_fit[gen] = gen_fittest_fit
@@ -255,7 +276,7 @@ class BaseGeneticAlgorithm:
                 break
             
         self.run_time_s = time.time() - start_time
-            
+        
         return overall_fittest
         
     def should_terminate(self, overall_fittest):
@@ -414,6 +435,19 @@ class TravellingSalesmanGA(BaseGeneticAlgorithm):
         self.fitness_cache = {}
         self.max_distance = max([max(subdict.values()) for subdict in city_distances.values()])
         self.num_cities = len(self.city_distances)
+        
+    def calc_distance(self, chromosome, pow=1):
+        # get list of city IDs
+        city_ids = self.translator.translate_chromosome(chromosome)
+        
+        # compute distance travelled
+        tot_dist = 0
+        for i, start_city_id in enumerate(city_ids[:-1]):
+            end_city_id = city_ids[i + 1]
+            tot_dist += self.city_distances[start_city_id][end_city_id] ** pow
+            
+        tot_dist += self.city_distances[city_ids[-1]][city_ids[0]] ** pow
+        return tot_dist
 
     def eval_fitness(self, chromosome):
         """
@@ -430,17 +464,6 @@ class TravellingSalesmanGA(BaseGeneticAlgorithm):
         if chromosome.dna in self.fitness_cache:
             return self.fitness_cache[chromosome.dna]
             
-        # get list of city IDs
-        city_ids = self.translator.translate_chromosome(chromosome)
-            
-        # compute distance travelled
-        tot_dist = 0
-        for i, start_city_id in enumerate(city_ids[:-1]):
-            end_city_id = city_ids[i + 1]
-            tot_dist += self.city_distances[start_city_id][end_city_id]
-            
-        tot_dist += self.city_distances[city_ids[-1]][city_ids[0]]
-            
-        fitness = -1 * tot_dist
+        fitness = -1 * self.calc_distance(chromosome, pow=2)
         self.fitness_cache[chromosome.dna] = fitness
         return fitness
