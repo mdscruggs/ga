@@ -86,7 +86,7 @@ class BaseGeneticAlgorithm:
             
         chromosomes.sort(key=self.eval_fitness)
         
-    def compete(self):
+    def compete(self, chromosomes):
         """
         Simulate competition/survival of the fittest.
         
@@ -99,9 +99,9 @@ class BaseGeneticAlgorithm:
         return:  list of surviving chromosomes
         """
         # update overall fitness for this run
-        self.sort()
-        min_fit = self.eval_fitness(self.chromosomes[0])
-        max_fit = self.eval_fitness(self.chromosomes[-1])
+        self.sort(chromosomes)
+        min_fit = self.eval_fitness(chromosomes[0])
+        max_fit = self.eval_fitness(chromosomes[-1])
         
         if min_fit < self.min_fit_ever:
             self.min_fit_ever = min_fit
@@ -113,7 +113,7 @@ class BaseGeneticAlgorithm:
         
         # choose survivors based on relative fitness within overall fitness range
         survivors = []
-        for chromosome in self.chromosomes:
+        for chromosome in chromosomes:
             fit = self.eval_fitness(chromosome)
             p_survival_absolute = (fit - self.min_fit_ever) / overall_fit_range if overall_fit_range != 0 else 1
             p_survival_relative = (fit - min_fit) / current_fit_range if current_fit_range != 0 else 1
@@ -128,7 +128,7 @@ class BaseGeneticAlgorithm:
 
         if not survivors:
             # rarely, nothing survives -- allow everyone to live
-            return self.chromosomes
+            return chromosomes
                 
         return survivors
         
@@ -180,7 +180,7 @@ class BaseGeneticAlgorithm:
             
         return survivors + offspring
         
-    def mutate(self, p_mutate):
+    def mutate(self, chromosomes, p_mutate):
         """ 
         Call every chromosome's ``mutate`` method. 
         
@@ -188,7 +188,7 @@ class BaseGeneticAlgorithm:
         """
         assert 0 <= p_mutate <= 1
         
-        for chromosome in self.chromosomes:
+        for chromosome in chromosomes:
             chromosome.mutate(p_mutate)
         
     def run(self, generations, p_mutate, p_crossover, elitist=True):
@@ -230,9 +230,9 @@ class BaseGeneticAlgorithm:
         overall_fittest_fit = self.eval_fitness(overall_fittest)
     
         for gen in range(1, generations + 1):
-            survivors = self.compete()
+            survivors = self.compete(self.chromosomes)
             self.chromosomes = self.reproduce(survivors, p_crossover)
-            self.mutate(p_mutate)
+            self.mutate(self.chromosomes, p_mutate)
                     
             # check for new fittest
             gen_fittest = self.get_fittest().copy()
