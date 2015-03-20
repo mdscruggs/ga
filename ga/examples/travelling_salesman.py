@@ -60,19 +60,20 @@ def run(num_cities=20, num_chromosomes=20, generations=2500):
         c = ReorderingSetChromosome(genes, choices)
         chromosomes.append(c)
         
-    ts_ga = TravellingSalesmanGA(city_distances, chromosomes, translator=BinaryIntTranslator())
+    ts_ga = TravellingSalesmanGA(city_distances, chromosomes, 
+                                 translator=BinaryIntTranslator(), 
+                                 abs_fit_weight=0, rel_fit_weight=1)
     
     p_mutate = 0.10
     p_cross = 0.50
     
-    best = ts_ga.run(generations, p_mutate, p_cross, elitist=True)
+    best = ts_ga.run(generations, p_mutate, p_cross, elitist=True, refresh_after=generations/2)
     best_city_ids = ts_ga.translator.translate_chromosome(best)
-    best_fit = ts_ga.eval_fitness(best)
-    best_dist = -1 * best_fit
+    best_dist = ts_ga.calc_distance(best)
     
     print("run took", ts_ga.run_time_s, "seconds")
     print("best solution =", best_city_ids)
-    print("best fitness =", best_fit, "dist =", best_dist)
+    print("best distance =", best_dist)
 
     if plt:
         # plot fitness progression
@@ -99,7 +100,7 @@ def run(num_cities=20, num_chromosomes=20, generations=2500):
 
             # plot optimal route
             chrom_city_ids = ts_ga.translator.translate_chromosome(chromosome)
-            dist = round(-1 * ts_ga.eval_fitness(chromosome), 2)
+            dist = round(ts_ga.calc_distance(chromosome), 2)
 
             ax.set_title("generation " + str(generation) + "\ndistance = " + str(dist))
 
