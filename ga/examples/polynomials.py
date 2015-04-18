@@ -4,8 +4,80 @@ try:
 except ImportError:
     py = None
 
-from ..algorithms import PolyModelGA
+from ..algorithms import BaseGeneticAlgorithm
 from ..chromosomes import Chromosome
+from ..translators import BinaryFloatTranslator
+
+
+class PolyModelGA(BaseGeneticAlgorithm):
+    """
+    A GA that attempts to find optimal coefficients of a polynomial.
+    """
+    def __init__(self, coefficients, num_x, significand_length, *args, **kwargs):
+        """
+        Construct a new ``PolyModelGA`` instance.
+
+        coefficients:  list of polynomial coefficients
+        num_x:  number of x-values to compute, starting at 1
+        significand_length:  length of significand in genes
+        *args, **kwargs forwarded to ``BaseGeneticAlgorithm`` constructor
+        """
+        super().__init__(*args, **kwargs)
+        self.translator = BinaryFloatTranslator(significand_length)
+
+        self.coefficients = coefficients
+        self.num_x = num_x
+        self.expected_values = self.compute_y(coefficients, num_x)
+
+        self.fitness_cache = {}
+
+    def compute_y(self, coefficients, num_x):
+        """ Return calculated y-values for the domain of x-values in [1, num_x]. """
+        y_vals = []
+
+        for x in range(1, num_x + 1):
+            y = sum([c * x ** i for i, c in enumerate(coefficients[::-1])])
+            y_vals.append(y)
+
+        return y_vals
+
+    def compute_err(self, solution_y, coefficients):
+        """
+        Return an error value by finding the absolute difference for each
+        element in a list of solution-generated y-values versus expected values.
+
+        Compounds error by 50% for each negative coefficient in the solution.
+
+        solution_y:  list of y-values produced by a solution
+        coefficients:  list of polynomial coefficients represented by the solution
+
+        return:  error value
+        """
+        error = 0
+        for modeled, expected in zip(solution_y, self.expected_values):
+            error += abs(modeled - expected)
+
+        if any([c < 0 for c in coefficients]):
+            error *= 1.5
+
+        return error
+
+    def eval_fitness(self, chromosome):
+        """
+        Evaluate the polynomial equation using coefficients represented by a
+        solution/chromosome, returning its error as the solution's fitness.
+
+        return:  fitness value
+        """
+        if chromosome.dna in self.fitness_cache:
+            return self.fitness_cache[chromosome.dna]
+
+        coefficients = self.translator.translate_chromosome(chromosome)
+        solution_y = self.compute_y(coefficients, self.num_x)
+        fitness = -1 * self.compute_err(solution_y, coefficients)
+
+        self.fitness_cache[chromosome.dna] = fitness
+        return fitness
 
 
 def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000, plot=True):

@@ -1,11 +1,77 @@
+import functools
+
 try:
     import pylab as py
     py.style.use('ggplot')
 except ImportError:
     py = None
 
-from ..algorithms import BiggestMultipleGA
+from ..algorithms import BaseGeneticAlgorithm
 from ..chromosomes import Chromosome
+from ..translators import BinaryIntTranslator
+
+
+class BiggestMultipleGA(BaseGeneticAlgorithm):
+    """
+    A GA that tries to find the largest multiple of a set of factors,
+    within the encodable space of the given chromosomes.
+
+    Forces use of a ``translators.BinaryIntTranslator``.
+    """
+    def __init__(self, factors, *args, **kwargs):
+        """
+        Construct a new ``BiggestMultipleGA`` instance.
+
+        Only allows chromosomes with 1 gene each.
+
+        factors:  sequence of integer factors >= 1 that solutions must have.
+        """
+        kwargs['translator'] = BinaryIntTranslator()
+        super().__init__(*args, **kwargs)
+
+        # only 1-gene chromosomes allowed
+        for c in self.chromosomes:
+            assert len(c.genes) == 1
+
+        assert factors and all(isinstance(i, int) and i >= 1 for i in factors)
+        self.factors = factors
+
+        self.max_encoded_val = int('1' * self.chromosomes[0].length, base=2)
+        self.best_possible_fit = len(self.factors)
+        self.found_best = False
+
+    def eval_fitness(self, chromosome):
+        """
+        Convert a 1-gene chromosome into an integer and calculate its fitness
+        by checking it against each required factor.
+
+        return:  fitness value
+        """
+        score = 0
+
+        number = self.translator.translate_gene(chromosome.genes[0])
+
+        for factor in self.factors:
+            if number % factor == 0:
+                score += 1
+            else:
+                score -= 1
+
+        # check for optimal solution
+        if score == len(self.factors):
+            min_product = functools.reduce(lambda a,b: a * b, self.factors)
+
+            if number + min_product > self.max_encoded_val:
+                print("Found best solution:", number)
+                self.found_best = True
+
+        # scale number of factors achieved/missed by ratio of
+        # the solution number to the maximum possible integer
+        # represented by binary strings of the given length
+        return score * number / self.max_encoded_val
+
+    def should_terminate(self, overall_fittest):
+        return self.found_best
 
 
 def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32, plot=True):

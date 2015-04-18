@@ -9,10 +9,55 @@ try:
 except ImportError:
     plt = None
 
-from ..genes import BinaryGene
+from ..algorithms import BaseGeneticAlgorithm
 from ..chromosomes import ReorderingSetChromosome
-from ..algorithms import TravellingSalesmanGA
+from ..genes import BinaryGene
 from ..translators import BinaryIntTranslator
+
+
+class TravellingSalesmanGA(BaseGeneticAlgorithm):
+    def __init__(self, city_distances, *args, **kwargs):
+        """
+        city_distances:  2-deep mapping of city_id -> city_id -> distance
+        """
+        super().__init__(*args, **kwargs)
+        self.city_distances = city_distances
+
+        self.fitness_cache = {}
+        self.max_distance = max([max(subdict.values()) for subdict in city_distances.values()])
+        self.num_cities = len(self.city_distances)
+
+    def calc_distance(self, chromosome, pow=1):
+        # get list of city IDs
+        city_ids = self.translator.translate_chromosome(chromosome)
+
+        # compute distance travelled
+        tot_dist = 0
+        for i, start_city_id in enumerate(city_ids[:-1]):
+            end_city_id = city_ids[i + 1]
+            tot_dist += self.city_distances[start_city_id][end_city_id] ** pow
+
+        tot_dist += self.city_distances[city_ids[-1]][city_ids[0]] ** pow
+        return tot_dist
+
+    def eval_fitness(self, chromosome):
+        """
+        Calculate the distance travelled by the salesman by converting
+        the solution/chromosome into a sequence of visited city IDs.
+
+        Penalty distance is added each time any of these conditions occur:
+          1. cities are visited multiple times
+          2. not all cities are visited
+          3. an invalid city ID is encountered
+
+        return:  fitness value
+        """
+        if chromosome.dna in self.fitness_cache:
+            return self.fitness_cache[chromosome.dna]
+
+        fitness = -1 * self.calc_distance(chromosome, pow=2)
+        self.fitness_cache[chromosome.dna] = fitness
+        return fitness
 
 
 def run(num_cities=20, num_chromosomes=20, generations=2500, plot=True):
