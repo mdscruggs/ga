@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+
+	<title>My Docs</title>
+
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="./css/highlight.css">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href=".">My Docs</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+
+            
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#ga">ga</a></li>
+        
+            <li><a href="#api-structure">API structure</a></li>
+        
+    
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="ga">ga</h1>
+<p>A lightweight genetic algorithm library written in pure Python.</p>
+<h2 id="api-structure">API structure</h2>
+<p>The API consists of 4 main concepts.</p>
+<ol>
+<li>genes (genes.py)</li>
+<li>chromosomes (chromosomes.py)</li>
+<li>translators (translators.py)</li>
+<li>genetic algorithms (algorithms.py)</li>
+</ol>
+<p>Base classes (some abstract) are provided for each of these concepts in the files listed above.
+You could just skip down to the genetic algorithms section, but to get the most out of this package, I recommend the full read.</p>
+<h3 id="genes-genespy">Genes (genes.py)</h3>
+<ul>
+<li>The "abstract" <code>BaseGene</code> class represents a single, uninterrupted sequence of genetic material (DNA).<ul>
+<li>NB: <code>BaseGene</code> is not technically abstract (it does not use the <code>abc</code> package) but should be treated as such.</li>
+</ul>
+</li>
+<li>
+<p>You can create genes with DNA randomly generated from the <code>GENETIC_MATERIAL_OPTIONS</code> class variable:</p>
+<pre><code>length = 4
+g = BinaryGene.create_random(length)  # BinaryGene.GENETIC_MATERIAL_OPTIONS = '10'
+print(g.dna)
+&gt; 4 random characters such as '0110'
+</code></pre>
+</li>
+<li>
+<p>Genes have a <code>mutate()</code> method that randomly mutates DNA elements based on a probability:</p>
+<pre><code>g = BinaryGene('1111')
+g.mutate(1.0)  # 100% chance that each element will mutate
+print(g.dna)
+&gt; '0000'
+</code></pre>
+</li>
+<li>
+<p>A few concrete gene classes are provided, with the following <code>GENETIC_MATERIAL_OPTIONS</code>:</p>
+<ul>
+<li><code>BinaryGene</code> - 01</li>
+<li><code>Base10Gene</code> - 0123456789</li>
+<li><code>AlphabetGene</code> - ABCDEFGHIJKLMNOPQRSTUVWXYZ</li>
+<li><code>DNAGene</code> - ATCG</li>
+</ul>
+</li>
+<li>
+<p>To subclass <code>BaseGene</code>, override the <code>GENETIC_MATERIAL_OPTIONS</code> class variable with a string of supported characters:</p>
+<pre><code>class VowelGene(BaseGene):
+    GENETIC_MATERIAL_OPTIONS = 'AEIOU'
+</code></pre>
+</li>
+</ul>
+<h3 id="chromosomes-chromosomespy">Chromosomes (chromosomes.py)</h3>
+<ul>
+<li>The concrete <code>Chromosome</code> class represents an ordered sequence of genes, and facilitates evolutionary mechanisms such as mutation and crossover.</li>
+<li>
+<p>To create a chromosome with randomly generated genes (<code>BinaryGene</code> by default):</p>
+<pre><code># 1 chromosome with 1 gene
+gene_length = 4
+c = Chromosome.create_random(gene_length)
+print(c.dna)
+&gt; something like Chromosome&lt;1100&gt;
+</code></pre>
+</li>
+<li>
+<p>To create a list of randomly generated chromosomes, with multiple genes of different lengths:</p>
+<pre><code># 30 chromosomes with 5 genes each
+gene_length = (2, 4, 6, 8, 10)
+chromosomes = Chromosome.create_random(gene_length, n=30, gene_class=Base10Gene)
+print(chromosomes[0])
+&gt; something like Chromosome&lt;01,9221,429183,23491832,1937261837&gt;
+</code></pre>
+</li>
+<li>
+<p>Chromosomes have a <code>crossover()</code> method to exchange DNA with each other:</p>
+<pre><code>c1 = Chromosome([BinaryGene('11')])
+c2 = Chromosome([BinaryGene('00')])
+c1.crossover(c2, 1)  # 1=crossover index
+print(c1, c2)
+&gt; Chromosome&lt;10&gt; Chromosome&lt;01&gt;
+</code></pre>
+</li>
+<li>
+<p>They also have a <code>mutate()</code> method which calls each gene's <code>mutate()</code> method with the same mutation probability.</p>
+</li>
+<li>NB: if you want to save a snapshot of a chromosome that may change, be sure to call its <code>copy()</code> method:<pre><code>c1 = Chromosome([BinaryGene('1111')])
+c1_copy = c1.copy()
+c1.mutate(1.0)
+print(c1_copy, c1)  # the original has changed
+&gt; Chromosome&lt;1111&gt; Chromosome&lt;0000&gt;
+</code></pre>
+</li>
+</ul>
+<h3 id="translators-translatorspy">Translators (translators.py)</h3>
+<ul>
+<li>A "translator" is responsible for translating DNA into an object (such as a number or custom class instance) that a genetic algorithm can use to measure the fitness of a solution/chromosome.</li>
+<li>
+<p>The abstract <code>BaseTranslator</code> class provides 2 methods:</p>
+<ul>
+<li><code>translate_gene</code> (abstract) - translates a single gene into a useful value</li>
+<li><code>translate_chromosome</code> (concrete) - returns a list of <code>translate_gene</code> results for a chromosome</li>
+</ul>
+</li>
+<li>
+<p>A few concrete translators are provided:</p>
+<ul>
+<li><code>BinaryIntTranslator</code> - translates binary DNA into base-10 integers</li>
+<li><code>BinaryFloatTranslator</code> - translates binary DNA into base-10 floating point real numbers (see its docstrings)</li>
+<li><code>Base10IntTranslator</code> - translates base-10 DNA into positive base-10 integers</li>
+</ul>
+</li>
+<li>
+<p>Custom genetic algorithms may require new ways of translating DNA into values/objects. For instance, you might need
+to create a new subclass that runs an external program and retrieves results:</p>
+<pre><code>class ModelTranslator(BaseTranslator):
+    def translate_gene(self, gene):
+        &lt;run a subprocess&gt;
+        return &lt;some results&gt;
+</code></pre>
+</li>
+</ul>
+<h3 id="genetic-algorithms-algorithmspy">Genetic algorithms (algorithms.py)</h3>
+<ul>
+<li>The abstract <code>BaseGeneticAlgorithm</code> class facilitates the execution and evolution of chromosomes toward an optimal state.</li>
+<li>
+<p>Genetic algorithm instances are given an initial population of chromosomes when created--this population is evolved over successive iterations (aka "generations"):</p>
+<pre><code>generations = 100
+chromosomes = Chromosome.create_random(gene_length=20, n=10)
+ga = MyGA(chromosomes)
+ga.run(generations, ...)
+</code></pre>
+</li>
+<li>
+<p>To create a new GA subclass, one must at least override the <code>eval_fitness()</code> method:</p>
+<pre><code>class MostOnesGA(BaseGeneticAlgorithm):
+    """ A simple GA to maximize the number of 1's in a solution. """
+
+    def eval_fitness(self, chromosome):
+        return chromosome.dna.count('1')
+</code></pre>
+</li>
+<li>
+<p>To run this GA for 100 generations and retrieve the best solution it encountered:</p>
+<pre><code>p_mutate = 0.15
+p_crossover = 0.60
+chromosomes = Chromosome.create_random(gene_length=20, n=10) 
+ga = MostOnesGA(chromosomes)
+best = ga.run(100, p_mutate, p_crossover)
+print(ga.eval_fitness(best))
+&gt; 20
+</code></pre>
+</li>
+<li>
+<p>Most GAs will need a translator to help the <code>eval_fitness()</code> method:</p>
+<pre><code>class BiggestIntGA(BaseGeneticAlgorithm):
+    """ A simple GA to find the largest encodable integer. """
+
+    def eval_fitness(self, chromosome):
+        ints = self.translator.translate_chromosome(chromosome)
+        return sum(ints)
+
+translator = BinaryIntTranslator()
+ga = BiggestNumberGA(chromosomes, translator=translator)
+</code></pre>
+</li>
+<li>
+<p>The <code>run()</code> method accepts several arguments that can help improve the success of your search:</p>
+<ul>
+<li><code>p_mutate</code> - the probability given to chromosome and gene <code>mutate()</code> methods</li>
+<li><code>p_crossover</code> - the probability given to the GA's <code>reproduce()</code> method</li>
+<li><code>elitist</code> (default=True) - at the end of a generation that did not find a new best chromosome, replace the current weakest with the overall strongest from the current run</li>
+<li><code>refresh_after</code> (default=None) - after N generations of not finding a new best chromosome, call the GA's <code>refresh()</code> method to force exploring the solution space</li>
+<li><code>quit_after</code> (default=None) - after N generations of not finding a new best chromosome, stop the search</li>
+</ul>
+</li>
+<li><code>BaseGeneticAlgorithm</code> has several methods you could override or otherwise play with as needed. </li>
+<li>General default behavior for these methods (in the order they are called each generation):<ul>
+<li><code>compete()</code> - simulate survival of the fittest (relative and absolute)</li>
+<li><code>reproduce()</code> - survivors of competition reproduce (with the potential for genetic cross-over) to restore the population to its original size</li>
+<li><code>mutate()</code> - check all chromosomes (and all genes) for mutation events</li>
+</ul>
+</li>
+</ul></div>
+            
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+
+        
+
+        <script src="./js/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/highlight.pack.js"></script>
+        <script src="./js/base.js"></script>
+
+        <!--
+        MkDocs version  : 0.12.1
+        Docs Build Date : 2015-04-18 21:10:42.955193
+        -->
+    </body>
+</html>
