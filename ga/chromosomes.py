@@ -1,6 +1,6 @@
 import random
 
-from .genes import BaseGene
+from .genes import BaseGene, BinaryGene
 
 
 class Chromosome:
@@ -8,6 +8,33 @@ class Chromosome:
     Represents a chromosome, a single strand of DNA with
     at least 1 gene. Genes are ordered along the chromosome.
     """
+    @classmethod
+    def create_random(cls, gene_length, n=1, gene_class=BinaryGene):
+        """
+        Create 1 or more chromosomes with randomly generated DNA.
+
+        gene_length:  int (or sequence of ints) describing gene DNA length
+        n:  number of chromosomes to create (default=1); returns a list if n>1, else a single chromosome
+        gene_class:  subclass of ``ga.chromosomes.BaseGene`` to use for genes
+
+        return:  new chromosome
+        """
+        assert issubclass(gene_class, BaseGene)
+        chromosomes = []
+
+        # when gene_length is scalar, convert to a list to keep subsequent code simple
+        if not hasattr(gene_length, '__iter__'):
+                gene_length = [gene_length]
+
+        for _ in range(n):
+            genes = [gene_class.create_random(length) for length in gene_length]
+            chromosomes.append(cls(genes))
+
+        if n == 1:
+            return chromosomes[0]
+        else:
+            return chromosomes
+
     def __init__(self, genes):
         """
         Construct a new ``Chromosome`` instance.

@@ -1,38 +1,6 @@
 import random
 
-from .chromosomes import Chromosome
-from .genes import BaseGene, BinaryGene
 
-
-def random_chromosomes(n, gene_length, gene_class=BinaryGene):
-    """
-    Return a list of chromosomes with randomly generated DNA.
-    
-    n: number of chromosomes to generate
-    gene_length:  int (or iterable of ints) describing gene DNA length
-    gene_class:  subclass of ``ga.chromosomes.BaseGene`` to use for genes
-    
-    return:  list of chromosomes
-    """
-    assert issubclass(gene_class, BaseGene)
-    
-    # when gene_length is scalar, convert to a list to keep subsequent code simple
-    if not hasattr(gene_length, '__iter__'):
-        gene_length = [gene_length]
-    
-    chromosomes = []
-    
-    for i in range(n):
-        genes = []
-        
-        for length in gene_length:
-            genes.append(gene_class.create_random(length))
-
-        chromosomes.append(Chromosome(genes))
-    
-    return chromosomes
-    
-    
 def compute_fitness_cdf(chromosomes, ga):
     """
     Return a list of fitness-weighted cumulative probabilities for a set of chromosomes.

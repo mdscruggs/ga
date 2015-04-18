@@ -5,10 +5,11 @@ except ImportError:
     py = None
 
 from ..algorithms import PolyModelGA
+from ..chromosomes import Chromosome
 from .. import util
 
 
-def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
+def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000, plot=True):
     # fit a polynomial equation to expected values
     
     poly_str = ''
@@ -29,7 +30,7 @@ def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
     #   2 bits for exponent body (represent 0, 1, 2)
     significand_length = 8
     gene_length = (1 + significand_length + 1 + 2,) * len(coefficients)  # 1 gene per polynomial coefficient
-    chromosomes = util.random_chromosomes(20, gene_length)
+    chromosomes = Chromosome.create_random(gene_length, n=20)
     
     poly_ga = PolyModelGA(coefficients, num_x, significand_length, chromosomes, abs_fit_weight=1, rel_fit_weight=0)
     
@@ -43,27 +44,28 @@ def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000):
     print("run took", poly_ga.run_time_s, "seconds")
     print("best solution coefficients =", best_coeff, "error =", poly_ga.compute_err(best_y, best_coeff))
 
-    if py:
-        # plot a curve for every solution that caused an upset
-        # older solutions have higher transparency
-        x = range(1, num_x + 1)
+    if plot:
+        if py:
+            # plot a curve for every solution that caused an upset
+            # older solutions have higher transparency
+            x = range(1, num_x + 1)
 
-        for new_best_gen in poly_ga.new_fittest_generations:
-            gen_fittest = poly_ga.generation_fittest[new_best_gen]
-            sol_coefficients = poly_ga.translator.translate_chromosome(gen_fittest)
-            modeled_y = poly_ga.compute_y(sol_coefficients, num_x)
-            alpha = min(0.5, max(0.2, new_best_gen/max(poly_ga.new_fittest_generations)))
+            for new_best_gen in poly_ga.new_fittest_generations:
+                gen_fittest = poly_ga.generation_fittest[new_best_gen]
+                sol_coefficients = poly_ga.translator.translate_chromosome(gen_fittest)
+                modeled_y = poly_ga.compute_y(sol_coefficients, num_x)
+                alpha = min(0.5, max(0.2, new_best_gen/max(poly_ga.new_fittest_generations)))
 
-            if new_best_gen == poly_ga.new_fittest_generations[-1]:
-                py.plot(x, modeled_y, color='green', label='best', marker='x', linewidth=4, markersize=12, alpha=alpha)
-            else:
-                py.plot(x, modeled_y, color='red', linestyle='--', alpha=alpha)
+                if new_best_gen == poly_ga.new_fittest_generations[-1]:
+                    py.plot(x, modeled_y, color='green', label='best', marker='x', linewidth=4, markersize=12, alpha=alpha)
+                else:
+                    py.plot(x, modeled_y, color='red', linestyle='--', alpha=alpha)
 
-        py.plot(x, poly_ga.expected_values, color='blue', marker='o', label='expected')
-        py.ylim(min(poly_ga.expected_values) - min(poly_ga.expected_values), max(poly_ga.expected_values) * 2)
-        py.legend(loc='best')
-        py.title('PolyModelGA ({} gen.)\n{}'.format(generations, poly_str))
+            py.plot(x, poly_ga.expected_values, color='blue', marker='o', label='expected')
+            py.ylim(min(poly_ga.expected_values) - min(poly_ga.expected_values), max(poly_ga.expected_values) * 2)
+            py.legend(loc='best')
+            py.title('PolyModelGA ({} gen.)\n{}'.format(generations, poly_str))
 
-        py.show()
-    else:
-        print("Did not plot example results because matplotlib not installed")
+            py.show()
+        else:
+            print("Did not plot example results because matplotlib not installed")

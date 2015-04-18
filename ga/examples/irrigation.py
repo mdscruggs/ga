@@ -7,6 +7,7 @@ import math
 import time
 
 from ..algorithms import BaseGeneticAlgorithm
+from ..chromosomes import Chromosome
 from ..translators import BinaryIntTranslator
 from .. import util
 
@@ -189,7 +190,7 @@ class IrrigationGA(BaseGeneticAlgorithm):
 def run(generations=500, p_mutate=0.10, p_crossover=0.65):
     # create GA instance
     gene_length = (7, 6)  # 2^6 = 64 > 51; 2^7 = 128 > 91
-    chromosomes = util.random_chromosomes(20, gene_length)
+    chromosomes = Chromosome.create_random(gene_length, n=20)
     irrig_ga = IrrigationGA(MAP, 51, 91, 9, chromosomes)
 
     # run GA

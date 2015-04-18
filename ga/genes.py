@@ -64,7 +64,19 @@ class BaseGene:
         
         p_mutate:  probability for mutation to occur
         """
-        raise NotImplementedError
+        new_dna = []
+
+        for bit in self.dna:
+            if random.random() < p_mutate:
+                new_bit = bit
+
+                while new_bit == bit:
+                    new_bit = random.choice(self.GENETIC_MATERIAL_OPTIONS)
+                bit = new_bit
+
+            new_dna.append(bit)
+
+        self.dna = ''.join(new_dna)
         
     def copy(self):
         """ Return a new instance of this gene with the same DNA. """
@@ -110,21 +122,6 @@ class Base10Gene(BaseGene):
     Only supports positive valued integers.
     """
     GENETIC_MATERIAL_OPTIONS = "0123456789"
-    
-    def mutate(self, p_mutate):
-        new_dna = []
-        
-        for bit in self.dna:
-            if random.random() < p_mutate:
-                new_bit = bit
-                
-                while new_bit == bit:
-                    new_bit = random.choice(self.GENETIC_MATERIAL_OPTIONS)
-                bit = new_bit
-                
-            new_dna.append(bit)
-            
-        self.dna = ''.join(new_dna)
         
        
 class AlphabetGene(BaseGene):
@@ -132,18 +129,7 @@ class AlphabetGene(BaseGene):
     A gene that uses uppercase alphabet characters for DNA.
     """
     GENETIC_MATERIAL_OPTIONS = string.ascii_uppercase
-    
-    def mutate(self, p_mutate):
-        new_dna = []
-        
-        for bit in self.dna:
-            if random.random() < p_mutate:
-                new_bit = bit
-                
-                while new_bit == bit:
-                    new_bit = random.choice(self.GENETIC_MATERIAL_OPTIONS)
-                bit = new_bit
-                
-            new_dna.append(bit)
-            
-        self.dna = ''.join(new_dna)
+
+
+class DNAGene(BaseGene):
+    GENETIC_MATERIAL_OPTIONS = 'ATCG'

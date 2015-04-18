@@ -5,12 +5,12 @@ except ImportError:
     py = None
 
 from ..algorithms import BiggestMultipleGA
-from .. import util
+from ..chromosomes import Chromosome
 
 
-def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32):
+def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32, plot=True):
     # find largest encodable integer that has all factors
-    chromosomes = util.random_chromosomes(10, gene_length)
+    chromosomes = Chromosome.create_random(gene_length, n=10)
 
     bm_ga = BiggestMultipleGA(factors, chromosomes)
     
@@ -27,14 +27,15 @@ def run(factors=(2, 3, 7, 11), gene_length=16, generations=2**32):
     for factor in factors:
         assert best_num % factor == 0
 
-    if py:
-        # plot fitness progression
-        py.plot([v for k, v in sorted(bm_ga.overall_fittest_fit.items())], label='run')
+    if plot:
+        if py:
+            # plot fitness progression
+            py.plot([v for k, v in sorted(bm_ga.overall_fittest_fit.items())], label='run')
 
-        py.xlabel('generation')
-        py.ylabel('fitness')
-        py.legend(loc='best')
+            py.xlabel('generation')
+            py.ylabel('fitness')
+            py.legend(loc='best')
 
-        py.show()
-    else:
-        print("Did not plot example results because matplotlib not installed")
+            py.show()
+        else:
+            print("Did not plot example results because matplotlib not installed")
