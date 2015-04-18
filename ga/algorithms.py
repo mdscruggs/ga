@@ -1,3 +1,4 @@
+import abc
 import random
 import time
 
@@ -5,7 +6,7 @@ from .chromosomes import Chromosome
 from .util import weighted_choice, compute_fitness_cdf
 
 
-class BaseGeneticAlgorithm:
+class BaseGeneticAlgorithm(abc.ABC):
     """
     Base genetic algorithm.
     
@@ -60,10 +61,11 @@ class BaseGeneticAlgorithm:
         self.overall_fittest_fit = {}
         self.new_fittest_generations = []
         self.run_time_s = None
-        
+
+    @abc.abstractmethod
     def eval_fitness(self, chromosome):
         """ Return a fitness score for a chromosome. """
-        raise NotImplementedError 
+        pass
             
     def get_fittest(self):
         """ Get the chromosome with the highest fitness score. """
