@@ -20,9 +20,9 @@ You could just skip down to the genetic algorithms section, but to get the most 
 * You can create genes with DNA randomly generated from the `GENETIC_MATERIAL_OPTIONS` class variable:
 
         length = 4
-        g = BinaryGene.create_random(length)
+        g = BinaryGene.create_random(length)  # BinaryGene.GENETIC_MATERIAL_OPTIONS = '10'
         print(g.dna)
-        > random characters such as '0110'
+        > 4 random characters such as '0110'
         
 * Genes have a `mutate()` method that randomly mutates DNA elements based on a probability:
         
@@ -37,7 +37,7 @@ You could just skip down to the genetic algorithms section, but to get the most 
     * `AlphabetGene` - ABCDEFGHIJKLMNOPQRSTUVWXYZ
     * `DNAGene` - ATCG
     
-* To sucblass `BaseGene`, override the `GENETIC_MATERIAL_OPTIONS` class variable with a string of supported characters:
+* To subclass `BaseGene`, override the `GENETIC_MATERIAL_OPTIONS` class variable with a string of supported characters:
   
         class VowelGene(BaseGene):
             GENETIC_MATERIAL_OPTIONS = 'AEIOU'
@@ -125,6 +125,18 @@ to create a new subclass that runs an external program and retrieves results:
         best = ga.run(100, p_mutate, p_crossover)
         print(ga.eval_fitness(best))
         > 20
+        
+* Most GAs will need a translator to help the `eval_fitness()` method:
+
+        class BiggestIntGA(BaseGeneticAlgorithm):
+            """ A simple GA to find the largest encodable integer. """
+            
+            def eval_fitness(self, chromosome):
+                ints = self.translator.translate_chromosome(chromosome)
+                return sum(ints)
+                
+        translator = BinaryIntTranslator()
+        ga = BiggestNumberGA(chromosomes, translator=translator)
         
 * The `run()` method accepts several arguments that can help improve the success of your search:
     * `p_mutate` - the probability given to chromosome and gene `mutate()` methods
