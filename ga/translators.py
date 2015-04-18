@@ -1,7 +1,9 @@
+import abc
+
 from .chromosomes import Chromosome
 
 
-class BaseTranslator:
+class BaseTranslator(abc.ABC):
     """
     A "translator" is responsible for translating DNA into an object 
     (such as a number or custom class instance) that a genetic algorithm 
@@ -14,6 +16,7 @@ class BaseTranslator:
     Translators perform these cellular mechanisms in this library, separating 
     raw chromosomes/genes/DNA from the logic needed to express them.
     """
+    @abc.abstractmethod
     def translate_gene(self, gene):
         """
         Translate a gene into the object it represents.
