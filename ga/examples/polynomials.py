@@ -6,7 +6,6 @@ except ImportError:
 
 from ..algorithms import PolyModelGA
 from ..chromosomes import Chromosome
-from .. import util
 
 
 def run(coefficients=(0.001, 0.01, 0.1, 1), num_x=10, generations=5000, plot=True):

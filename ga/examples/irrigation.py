@@ -9,7 +9,6 @@ import time
 from ..algorithms import BaseGeneticAlgorithm
 from ..chromosomes import Chromosome
 from ..translators import BinaryIntTranslator
-from .. import util
 
 MAP = (  # "x" denotes a crop cell
 """......x...x....x............x............x.................................x...............
