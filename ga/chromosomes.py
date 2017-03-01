@@ -24,7 +24,7 @@ class Chromosome:
 
         # when gene_length is scalar, convert to a list to keep subsequent code simple
         if not hasattr(gene_length, '__iter__'):
-                gene_length = [gene_length]
+            gene_length = [gene_length]
 
         for _ in range(n):
             genes = [gene_class.create_random(length) for length in gene_length]
