@@ -54,6 +54,9 @@ class BaseGeneticAlgorithm(abc.ABC):
         self.orig_pop_size = len(self.chromosomes)
         self.min_fit_ever = None
         self.max_fit_ever = None
+
+        # maps chromosome -> fitness
+        self.fitness_cache = {}
         
         # run results
         self.generation_fittest = {}
@@ -64,16 +67,30 @@ class BaseGeneticAlgorithm(abc.ABC):
 
     @abc.abstractmethod
     def eval_fitness(self, chromosome):
-        """ Return a fitness score for a chromosome. """
+        """
+        Evaluate the fitness score for a chromosome.
+        Does not use caching.
+        You should probably call get_fitness().
+        """
         pass
+
+    def get_fitness(self, chromosome):
+        """ Get the fitness score for a chromosome, using the cached value if available. """
+        fitness = self.fitness_cache.get(chromosome.dna)
+
+        if fitness is None:
+            fitness = self.eval_fitness(chromosome)
+            self.fitness_cache[chromosome.dna] = fitness
+
+        return fitness
             
     def get_fittest(self):
         """ Get the chromosome with the highest fitness score. """
-        return max(self.chromosomes, key=self.eval_fitness)
+        return max(self.chromosomes, key=self.get_fitness)
         
     def get_weakest(self):
         """ Get the chromosome with the lowest fitness score. """
-        return min(self.chromosomes, key=self.eval_fitness)
+        return min(self.chromosomes, key=self.get_fitness)
         
     def sort(self, chromosomes):
         """ 
@@ -81,7 +98,7 @@ class BaseGeneticAlgorithm(abc.ABC):
         
         chromosomes:  list of chromosomes to sort in-place
         """
-        chromosomes.sort(key=self.eval_fitness)
+        chromosomes.sort(key=self.get_fitness)
         
     def compete(self, chromosomes):
         """
@@ -97,8 +114,8 @@ class BaseGeneticAlgorithm(abc.ABC):
         """
         # update overall fitness for this run
         self.sort(chromosomes)
-        min_fit = self.eval_fitness(chromosomes[0])
-        max_fit = self.eval_fitness(chromosomes[-1])
+        min_fit = self.get_fitness(chromosomes[0])
+        max_fit = self.get_fitness(chromosomes[-1])
         
         if min_fit < self.min_fit_ever:
             self.min_fit_ever = min_fit
@@ -111,7 +128,7 @@ class BaseGeneticAlgorithm(abc.ABC):
         # choose survivors based on relative fitness within overall fitness range
         survivors = []
         for chromosome in chromosomes:
-            fit = self.eval_fitness(chromosome)
+            fit = self.get_fitness(chromosome)
             p_survival_absolute = (fit - self.min_fit_ever) / overall_fit_range if overall_fit_range != 0 else 1
             p_survival_relative = (fit - min_fit) / current_fit_range if current_fit_range != 0 else 1
             
@@ -233,7 +250,7 @@ class BaseGeneticAlgorithm(abc.ABC):
         self.new_fittest_generations.clear()
         
         overall_fittest = self.get_fittest()
-        overall_fittest_fit = self.eval_fitness(overall_fittest)
+        overall_fittest_fit = self.get_fitness(overall_fittest)
         gens_since_upset = 0
     
         for gen in range(1, generations + 1):
@@ -243,7 +260,7 @@ class BaseGeneticAlgorithm(abc.ABC):
                     
             # check for new fittest
             gen_fittest = self.get_fittest().copy()
-            gen_fittest_fit = self.eval_fitness(gen_fittest)
+            gen_fittest_fit = self.get_fitness(gen_fittest)
             
             if gen_fittest_fit > overall_fittest_fit:
                 overall_fittest = gen_fittest
@@ -274,6 +291,8 @@ class BaseGeneticAlgorithm(abc.ABC):
             
             if self.should_terminate(overall_fittest):
                 break
+
+            self.fitness_cache.clear()
             
         self.run_time_s = time.time() - start_time
         

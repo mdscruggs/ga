@@ -6,8 +6,12 @@ from . import travelling_salesman
 from . import irrigation
 
 
-def run_all(plot=True):
+def run_all(plot=True, seed=None):
     """ Run all examples. """
+    if seed is not None:
+        import random
+        random.seed(seed)
+
     print("Running biggest_multiple.py")
     biggest_multiple.run(plot=plot)
 

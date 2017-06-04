@@ -69,14 +69,10 @@ class PolyModelGA(BaseGeneticAlgorithm):
 
         return:  fitness value
         """
-        if chromosome.dna in self.fitness_cache:
-            return self.fitness_cache[chromosome.dna]
-
         coefficients = self.translator.translate_chromosome(chromosome)
         solution_y = self.compute_y(coefficients, self.num_x)
         fitness = -1 * self.compute_err(solution_y, coefficients)
 
-        self.fitness_cache[chromosome.dna] = fitness
         return fitness
 
 

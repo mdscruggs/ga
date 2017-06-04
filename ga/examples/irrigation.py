@@ -115,17 +115,12 @@ class IrrigationGA(BaseGeneticAlgorithm):
         # parse map string into a list of strings, 1 string per row
         self.maplist = mapstr_to_list(mapstr)
 
-        self.fitness_cache = {}  # DNA -> fitness value
-
     def eval_fitness(self, chromosome):
         """
         Return the number of plants reached by the sprinkler.
 
         Returns a large penalty for sprinkler locations outside the map.
         """
-        if chromosome.dna in self.fitness_cache:
-            return self.fitness_cache[chromosome.dna]
-
         # convert DNA to represented sprinkler coordinates
         sx, sy = self.translator.translate_chromosome(chromosome)
 
@@ -199,7 +194,7 @@ def run(generations=500, p_mutate=0.10, p_crossover=0.65):
 
     # report results
     best_x, best_y = irrig_ga.translator.translate_chromosome(best)
-    best_plant_count = irrig_ga.eval_fitness(best)
+    best_plant_count = irrig_ga.get_fitness(best)
 
     print("Best solution is (row, col) ({}, {}) with {} plants reached".format(best_y, best_x, best_plant_count))
     print("took", round(t1-t0, 2), "sec")

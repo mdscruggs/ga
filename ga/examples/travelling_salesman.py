@@ -23,7 +23,6 @@ class TravellingSalesmanGA(BaseGeneticAlgorithm):
         super().__init__(*args, **kwargs)
         self.city_distances = city_distances
 
-        self.fitness_cache = {}
         self.max_distance = max([max(subdict.values()) for subdict in city_distances.values()])
         self.num_cities = len(self.city_distances)
 
@@ -52,12 +51,7 @@ class TravellingSalesmanGA(BaseGeneticAlgorithm):
 
         return:  fitness value
         """
-        if chromosome.dna in self.fitness_cache:
-            return self.fitness_cache[chromosome.dna]
-
-        fitness = -1 * self.calc_distance(chromosome, pow=2)
-        self.fitness_cache[chromosome.dna] = fitness
-        return fitness
+        return -self.calc_distance(chromosome, pow=2)
 
 
 def run(num_cities=20, num_chromosomes=20, generations=2500, plot=True):
