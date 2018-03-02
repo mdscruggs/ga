@@ -189,7 +189,7 @@ class BaseGeneticAlgorithm(abc.ABC):
                 # same chromosome can be c1 and c2
                 c2 = random.choice(survivors).copy()
                 point1 = random.randrange(0, c1.length)
-                point2 = random.randrange(point1 + 1, c1.length) if two_point_crossover else None
+                point2 = random.randrange(point1 + 1, c1.length + 1) if two_point_crossover else None
                 c1.crossover(c2, point1, point2)
                 
             offspring.append(c1)
