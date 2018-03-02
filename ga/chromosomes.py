@@ -76,9 +76,9 @@ class Chromosome:
         """ Return the length of this chromosome's full DNA string. """
         return len(self.dna)
         
-    def crossover(self, chromosome, point):
+    def crossover(self, chromosome, point1, point2=None):
         """
-        Exchange DNA with another chromosome of equal length at a common point.
+        Exchange DNA with another chromosome of equal length at one or two common points.
         
         For example, consider chromosomes:
           1. 11110000
@@ -87,16 +87,31 @@ class Chromosome:
         If the crossover point is 4, the exchange results in a new DNA arrangement:
           1. 11111111
           2. 00000000
+
+        If 2 points are used--3 and 6--this happens:
+
+          1. 11001100
+          2. 00110011
           
         chromosome:  other ``Chromosome`` to exchange DNA with
-        point:  zero-based index used for the crossover point
+        point1:  zero-based index used for the first (and possibly only) crossover point
+        point2:  zero-based index used for the second (optional) crossover point; must be > point1
         """
         assert self.length == chromosome.length
-        new_dna = self.dna[:point] + chromosome.dna[point:]
-        other_new_dna = chromosome.dna[:point] + self.dna[point:]
-        
-        self.dna = new_dna
-        chromosome.dna = other_new_dna
+
+        if point2 is None:
+            new_dna = self.dna[:point1] + chromosome.dna[point1:]
+            other_new_dna = chromosome.dna[:point1] + self.dna[point1:]
+
+            self.dna = new_dna
+            chromosome.dna = other_new_dna
+        else:
+            assert point2 > point1
+            self_substr = self.dna[point1:point2 + 1]
+            other_substr = chromosome.dna[point1:point2 + 1]
+
+            self.dna = self.dna[:point1] + other_substr + self.dna[point2 + 1:]
+            chromosome.dna = chromosome.dna[:point1] + self_substr + chromosome.dna[point2 + 1:]
         
     def mutate(self, p_mutate):
         """ 
@@ -163,13 +178,13 @@ class ReorderingSetChromosome(Chromosome):
             
         self.check_genes()
             
-    def crossover(self, chromosome, point):
+    def crossover(self, chromosome, point1, point2=None):
         # find gene on other chromosome at point
         i = 0
         other_gene_idx = 0
         for g in chromosome.genes:
             i += g.length
-            if point < i:
+            if point1 < i:
                 break
                 
             other_gene_idx += 1

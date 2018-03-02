@@ -146,7 +146,7 @@ class BaseGeneticAlgorithm(abc.ABC):
                 
         return survivors
         
-    def reproduce(self, survivors, p_crossover, target_size=None):
+    def reproduce(self, survivors, p_crossover, two_point_crossover=False, target_size=None):
         """
         Reproduces the population from a pool of surviving chromosomes
         until a target population size is met. Offspring are created
@@ -162,6 +162,7 @@ class BaseGeneticAlgorithm(abc.ABC):
         survivors:  pool of parent chromosomes to reproduce from
         p_crossover:  probability in [0, 1] that a crossover event will
                       occur for each offspring
+        two_point_crossover (default=False):  whether 2-point crossover is used; default is 1-point
         target_size (default=original population size): target population size
         
         return:  list of survivors plus any offspring
@@ -187,8 +188,9 @@ class BaseGeneticAlgorithm(abc.ABC):
                 # randomly pick a crossover mate from survivors
                 # same chromosome can be c1 and c2
                 c2 = random.choice(survivors).copy()
-                crosspoint = random.randrange(0, c1.length)
-                c1.crossover(c2, crosspoint)
+                point1 = random.randrange(0, c1.length)
+                point2 = random.randrange(point1 + 1, c1.length) if two_point_crossover else None
+                c1.crossover(c2, point1, point2)
                 
             offspring.append(c1)
             
@@ -214,7 +216,8 @@ class BaseGeneticAlgorithm(abc.ABC):
         """
         self.mutate(chromosomes, p_mutate)
         
-    def run(self, generations, p_mutate, p_crossover, elitist=True, refresh_after=None, quit_after=None):
+    def run(self, generations, p_mutate, p_crossover, elitist=True, two_point_crossover=False,
+            refresh_after=None, quit_after=None):
         """
         Run a standard genetic algorithm simulation for a set number
         of generations (iterations), each consisting of the following
@@ -232,6 +235,10 @@ class BaseGeneticAlgorithm(abc.ABC):
         p_crossover:  probability in [0, 1] that a crossover event will occur for each offspring
         elitist (default=True):  option to replace the weakest solution with the 
                                  strongest if a new one is not found each generation
+        two_point_crossover (default=False):  whether 2-point crossover is used
+        refresh_after:  number of generations since the last upset after which to randomly generate a new population
+        quit_after:  number of generations since the last upset after which to stop the run, possibly before reaching
+                     ``generations`` iterations
                                  
         return:  the overall fittest solution (chromosome)
         """
@@ -255,7 +262,7 @@ class BaseGeneticAlgorithm(abc.ABC):
     
         for gen in range(1, generations + 1):
             survivors = self.compete(self.chromosomes)
-            self.chromosomes = self.reproduce(survivors, p_crossover)
+            self.chromosomes = self.reproduce(survivors, p_crossover, two_point_crossover=two_point_crossover)
             self.mutate(self.chromosomes, p_mutate)
                     
             # check for new fittest
